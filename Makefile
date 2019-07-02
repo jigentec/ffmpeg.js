@@ -9,7 +9,7 @@ all:
 		--rm \
 		-v $(PWD):/build:z \
 		-it $(TAG) \
-		/bin/sh -c "cd /build && make -f ${BIN}.mk clean all"
+		/bin/bash -c "source ./emsdk_env.sh && cd /build && make -f ${BIN}.mk clean all"
 
 docker:
 	docker build -t $(TAG) .

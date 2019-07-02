@@ -14,7 +14,7 @@ RUN mkdir -p /emsdk && \
 	./emsdk update && \
 	./emsdk install latest && \
 	./emsdk activate latest && \
-	source ./emsdk_env.sh
+	cp ./emsdk_env.sh /emsdk_env.sh
 
 CMD ["/bin/bash"]
 
