@@ -1,2 +1,27 @@
-/node_modules/
-/ffmpeg*.js
+# python
+venv/
+*.pyc
+wsgi_env/
+.idea/
+.pytest_cache/
+
+# vim
+*.swp
+*.swo
+*.swn
+*.swm
+
+# bin
+flvmetrics
+*.bin
+*.o
+*.dylib
+*.so
+*.so.*
+*.a
+
+# data
+*.dat
+
+# test
+test/*
