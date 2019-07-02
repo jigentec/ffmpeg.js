@@ -21,11 +21,11 @@ FFMPEG_WEBM_PC_PATH_ = \
 FFMPEG_WEBM_PC_PATH = $(subst : ,:,$(FFMPEG_WEBM_PC_PATH_))
 LIBASS_DEPS = 
 WEBM_SHARED_DEPS =
-MP4_MUXERS = mp4 
-MP4_ENCODERS = libx264 aac
+MP4_MUXERS =
+MP4_ENCODERS =
 FFMPEG_MP4_BC = build/ffmpeg-mp4/ffmpeg.bc
 FFMPEG_MP4_PC_PATH = ../x264/dist/lib/pkgconfig
-MP4_SHARED_DEPS = build/x264/dist/lib/libx264.so
+MP4_SHARED_DEPS =
 
 all: submodules mp4
 
@@ -61,48 +61,6 @@ clean-ffmpeg-webm:
 	-cd build/ffmpeg-webm && rm -f ffmpeg.bc && make clean
 clean-ffmpeg-mp4:
 	-cd build/ffmpeg-mp4 && rm -f ffmpeg.bc && make clean
-
-build/opus/configure:
-	cd build/opus && ./autogen.sh
-
-build/opus/dist/lib/libopus.so: build/opus/configure
-	cd build/opus && \
-	emconfigure ./configure \
-		CFLAGS=-O3 \
-		--prefix="$$(pwd)/dist" \
-		--disable-static \
-		--disable-doc \
-		--disable-extra-programs \
-		--disable-asm \
-		--disable-rtcd \
-		--disable-intrinsics \
-		&& \
-	emmake make -j8 && \
-	emmake make install
-
-build/x264/dist/lib/libx264.so:
-	cd build/x264 && \
-	#git reset --hard &&
-	patch -p1 < ../x264-configure.patch && \
-	emconfigure ./configure \
-		--prefix="$$(pwd)/dist" \
-		--extra-cflags="-Wno-unknown-warning-option" \
-		--host=x86-none-linux \
-		--disable-cli \
-		--enable-shared \
-		--disable-opencl \
-		--disable-thread \
-		--disable-asm \
-		\
-		--disable-avs \
-		--disable-swscale \
-		--disable-lavf \
-		--disable-ffms \
-		--disable-gpac \
-		--disable-lsmash \
-		&& \
-	emmake make -j8 && \
-	emmake make install
 
 # TODO(Kagami): Emscripten documentation recommends to always use shared
 # libraries but it's not possible in case of ffmpeg because it has
@@ -154,29 +112,8 @@ FFMPEG_COMMON_ARGS = \
 	--disable-xlib \
 	--disable-zlib
 
-build/ffmpeg-webm/ffmpeg.bc: $(WEBM_SHARED_DEPS)
-	cd build/ffmpeg-webm && \
-	# git reset --hard &&
-	patch -p1 < ../ffmpeg-disable-arc4random.patch && \
-	patch -p1 < ../ffmpeg-default-font.patch && \
-	patch -p1 < ../ffmpeg-disable-monotonic.patch && \
-	EM_PKG_CONFIG_PATH=$(FFMPEG_WEBM_PC_PATH) emconfigure ./configure \
-		$(FFMPEG_COMMON_ARGS) \
-		$(addprefix --enable-encoder=,$(WEBM_ENCODERS)) \
-		$(addprefix --enable-muxer=,$(WEBM_MUXERS)) \
-		--enable-filter=subtitles \
-		--enable-libass \
-		--enable-libopus \
-		--enable-libvpx \
-		--extra-cflags="-I../libvpx/dist/include" \
-		--extra-ldflags="-L../libvpx/dist/lib" \
-		&& \
-	emmake make -j8 && \
-	cp ffmpeg ffmpeg.bc
-
 build/ffmpeg-mp4/ffmpeg.bc: $(MP4_SHARED_DEPS)
 	cd build/ffmpeg-mp4 && \
-	# git reset --hard &&
 	patch -p1 < ../ffmpeg-disable-arc4random.patch && \
 	patch -p1 < ../ffmpeg-disable-monotonic.patch && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_MP4_PC_PATH) emconfigure ./configure \
@@ -184,8 +121,6 @@ build/ffmpeg-mp4/ffmpeg.bc: $(MP4_SHARED_DEPS)
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
 		--enable-gpl \
-		--enable-libmp3lame \
-		--enable-libx264 \
 		--extra-cflags="-I../lame/dist/include" \
 		--extra-ldflags="-L../lame/dist/lib" \
 		&& \
@@ -202,16 +137,6 @@ EMCC_COMMON_ARGS = \
 	-O3 --memory-init-file 0 \
 	--pre-js $(PRE_JS) \
 	-o $@
-
-ffmpeg-webm.js: $(FFMPEG_WEBM_BC) $(PRE_JS) $(POST_JS_SYNC)
-	emcc $(FFMPEG_WEBM_BC) $(WEBM_SHARED_DEPS) \
-		--post-js $(POST_JS_SYNC) \
-		$(EMCC_COMMON_ARGS)
-
-ffmpeg-worker-webm.js: $(FFMPEG_WEBM_BC) $(PRE_JS) $(POST_JS_WORKER)
-	emcc $(FFMPEG_WEBM_BC) $(WEBM_SHARED_DEPS) \
-		--post-js $(POST_JS_WORKER) \
-		$(EMCC_COMMON_ARGS)
 
 ffmpeg-mp4.js: $(FFMPEG_MP4_BC) $(PRE_JS) $(POST_JS_SYNC)
 	emcc $(FFMPEG_MP4_BC) $(MP4_SHARED_DEPS) \
