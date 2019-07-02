@@ -97,7 +97,6 @@ FFMPEG_COMMON_ARGS = \
 	--disable-d3d11va \
 	--disable-dxva2 \
 	--disable-vaapi \
-	--disable-vda \
 	--disable-vdpau \
 	$(addprefix --enable-decoder=,$(COMMON_DECODERS)) \
 	$(addprefix --enable-demuxer=,$(COMMON_DEMUXERS)) \
@@ -107,13 +106,12 @@ FFMPEG_COMMON_ARGS = \
 	--disable-iconv \
 	--disable-libxcb \
 	--disable-lzma \
-	--disable-sdl \
 	--disable-securetransport \
 	--disable-xlib \
 	--disable-zlib
 
 build/ffmpeg-mp4/ffmpeg.bc: $(MP4_SHARED_DEPS)
-	cd build/ffmpeg-mp4 && \
+	cd build/ffmpeg-mp4 && git reset --hard && \
 	patch -p1 < ../ffmpeg-disable-arc4random.patch && \
 	patch -p1 < ../ffmpeg-disable-monotonic.patch && \
 	EM_PKG_CONFIG_PATH=$(FFMPEG_MP4_PC_PATH) emconfigure ./configure \

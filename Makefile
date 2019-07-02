@@ -1,6 +1,6 @@
 PWD=$(shell pwd)
 BIN=ffmpeg.js
-TAG=ffmpegjs-builder:latest
+TAG=korob/ffmpegjs-builder:latest
 
 .PHONY: all docker clean
 
@@ -9,10 +9,11 @@ all:
 		--rm \
 		-v $(PWD):/build:z \
 		-it $(TAG) \
-		/bin/bash -c "source ./emsdk_env.sh && cd /build && make -f ${BIN}.mk clean all"
+		/bin/bash -c "source emsdk/emsdk-portable/emsdk_env.sh && cd /build && make -f ${BIN}.mk clean all"
 
 docker:
 	docker build -t $(TAG) .
+	docker push $(TAG)
 
 clean:
 	$(MAKE) -f ${BIN}.mk clean BIN=${BIN}
