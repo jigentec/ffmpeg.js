@@ -3,7 +3,7 @@ MAINTAINER Pu-Chen Mao <mao@jigentec.com>
 
 RUN apt-get update && \
     apt-get -y install wget python git automake libtool build-essential cmake \
-    libglib2.0-dev closure-compiler
+    libglib2.0-dev closure-compiler yasm
 
 SHELL ["/bin/bash", "-c"]
 RUN mkdir -p /emsdk && \
