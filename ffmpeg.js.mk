@@ -6,7 +6,7 @@ PRE_JS = build/pre.js
 POST_JS_SYNC = build/post-sync.js
 POST_JS_WORKER = build/post-worker.js
 
-COMMON_FILTERS = aresample scale crop overlay
+COMMON_FILTERS = aresample 
 COMMON_DEMUXERS = flv 
 COMMON_DECODERS = h264 hevc opus mp3 aac
 
@@ -73,9 +73,10 @@ clean-ffmpeg-mp4:
 # - <https://ffmpeg.org/pipermail/libav-user/2013-February/003698.html>
 FFMPEG_COMMON_ARGS = \
 	--cc=emcc \
+	--nm=llvm-nm \
 	--enable-cross-compile \
 	--target-os=none \
-	--arch=x86 \
+	--arch=x86_64 \
 	--disable-runtime-cpudetect \
 	--disable-asm \
 	--disable-fast-unaligned \
@@ -100,7 +101,7 @@ FFMPEG_COMMON_ARGS = \
 	--disable-vdpau \
 	$(addprefix --enable-decoder=,$(COMMON_DECODERS)) \
 	$(addprefix --enable-demuxer=,$(COMMON_DEMUXERS)) \
-	--enable-protocol=file \
+	--enable-protocol=file,pipe \
 	$(addprefix --enable-filter=,$(COMMON_FILTERS)) \
 	--disable-bzlib \
 	--disable-iconv \
@@ -114,7 +115,8 @@ build/ffmpeg-mp4/ffmpeg.bc: $(MP4_SHARED_DEPS)
 	cd build/ffmpeg-mp4 && git reset --hard && \
 	patch -p1 < ../ffmpeg-disable-arc4random.patch && \
 	patch -p1 < ../ffmpeg-disable-monotonic.patch && \
-	EM_PKG_CONFIG_PATH=$(FFMPEG_MP4_PC_PATH) emconfigure ./configure \
+	EM_PKG_CONFIG_PATH=$(FFMPEG_MP4_PC_PATH) \
+	NM=llvm-nm emconfigure ./configure \
 		$(FFMPEG_COMMON_ARGS) \
 		$(addprefix --enable-encoder=,$(MP4_ENCODERS)) \
 		$(addprefix --enable-muxer=,$(MP4_MUXERS)) \
@@ -130,6 +132,7 @@ build/ffmpeg-mp4/ffmpeg.bc: $(MP4_SHARED_DEPS)
 # for simple tests and 32M tends to run slower than 64M.
 EMCC_COMMON_ARGS = \
 	--closure 1 \
+	-g1 \
 	-s TOTAL_MEMORY=67108864 \
 	-s OUTLINING_LIMIT=20000 \
 	-O3 --memory-init-file 0 \
